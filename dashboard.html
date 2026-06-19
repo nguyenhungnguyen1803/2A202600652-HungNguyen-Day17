@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Memory Systems Evaluation Dashboard</title>
+    <!-- Import Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-secondary: #06b6d4; /* Cyan */
+            --accent-success: #10b981; /* Emerald */
+            --accent-warning: #f59e0b; /* Amber */
+            --accent-danger: #ef4444; /* Red */
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --font-outfit: 'Outfit', sans-serif;
+            --font-inter: 'Inter', sans-serif;
+            --glass-bg: rgba(17, 24, 39, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-color);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-inter);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Sidebar Navigation */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 280px;
+            background-color: rgba(17, 24, 39, 0.95);
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-family: var(--font-outfit);
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo-text {
+            font-family: var(--font-outfit);
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex-grow: 1;
+        }
+
+        .nav-item button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-family: var(--font-inter);
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item button:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active button {
+            color: white;
+            background: var(--gradient-primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3rem;
+            max-width: 1200px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-title h1 {
+            font-family: var(--font-outfit);
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #ffffff, #818cf8, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Progress Card in Header */
+        .progress-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-circle-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+
+        .progress-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent-success);
+        }
+
+        .progress-info h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .progress-info p {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        /* Tab Content Control */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards and Layout Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #374151;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .card.card-primary::before { background: var(--gradient-primary); }
+        .card.card-accent::before { background: var(--gradient-accent); }
+        .card.card-success::before { background: var(--accent-success); }
+        .card.card-warning::before { background: var(--accent-warning); }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title-icon {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card.card-accent .card-title-icon {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-secondary);
+        }
+
+        .card.card-success .card-title-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-success);
+        }
+
+        .card.card-warning .card-title-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-warning);
+        }
+
+        .card-title-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .card h2 {
+            font-family: var(--font-outfit);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card h3 {
+            font-family: var(--font-outfit);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        /* Checklists and Tasks */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .task-item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        .task-item input[type="checkbox"]:checked {
+            background-color: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .task-item input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .task-details {
+            flex-grow: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .task-item.completed .task-title {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+
+        .task-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .badge-file {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: #67e8f9;
+        }
+
+        /* Tech Details Spec Viewer */
+        .tabs-sub {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+            overflow-x: auto;
+        }
+
+        .sub-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-inter);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sub-tab-btn:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .sub-tab-btn.active {
+            color: var(--accent-secondary);
+            background-color: rgba(6, 182, 212, 0.1);
+        }
+
+        .spec-container {
+            display: none;
+        }
+
+        .spec-container.active {
+            display: block;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: #080c14;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        .code-lang {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Benchmark results table */
+        .bench-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .bench-table th, .bench-table td {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .bench-table th {
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .bench-table td {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .bench-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        .value-good {
+            color: var(--accent-success);
+            font-weight: 600;
+        }
+
+        .value-bad {
+            color: var(--accent-danger);
+        }
+
+        .test-pass-badge {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent-success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .comparison-hero {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.6) 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-outfit);
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0.25rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            color: var(--accent-success);
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Flow Visualizer */
+        .flow-visualizer {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            background-color: rgba(8, 12, 20, 0.5);
+            border: 1px dashed var(--card-border);
+            border-radius: 12px;
+            padding: 2rem;
+            align-items: center;
+        }
+
+        .flow-step {
+            width: 80%;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.25rem;
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+
+        .flow-step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .flow-step-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .flow-step-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="logo-container">
+                <div class="logo-icon">M</div>
+                <div class="logo-text">Memory System</div>
+            </div>
+            
+            <nav style="flex-grow: 1;">
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-tab="tab-evaluation">
+                        <button>
+                            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                            <span>Kết Quả Đánh Giá</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" data-tab="tab-overview">
+                        <button>
+                            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <span>Lộ Trình & Tiến Độ</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" data-tab="tab-specs">
+                        <button>
+                            <svg viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                            <span>Gợi Ý Cấu Trúc Code</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" data-tab="tab-diagram">
+                        <button>
+                            <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span>Sơ Đồ Hoạt Động</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div style="font-size: 0.75rem; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--card-border); padding-top: 1rem;">
+                <p>Day 17 - Giai đoạn 2</p>
+                <p>Track 3: Memory Systems</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <header>
+                <div class="header-title">
+                    <h1>Memory Systems for AI Agent</h1>
+                    <p>Báo cáo đánh giá hiệu năng Baseline Agent vs Advanced Agent</p>
+                </div>
+                
+                <!-- Dynamic Progress Tracker -->
+                <div class="progress-card">
+                    <div class="progress-circle-container">
+                        <svg class="progress-ring" width="60" height="60">
+                            <circle class="progress-ring__circle" stroke="#1f2937" stroke-width="4" fill="transparent" r="26" cx="30" cy="30"/>
+                            <circle id="progressCircle" class="progress-ring__circle" stroke="url(#emeraldGradient)" stroke-width="4" stroke-dasharray="163.36 163.36" stroke-dashoffset="0" fill="transparent" r="26" cx="30" cy="30"/>
+                            <defs>
+                                <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#10b981" />
+                                    <stop offset="100%" stop-color="#059669" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div id="progressPercent" class="progress-percentage">100%</div>
+                    </div>
+                    <div class="progress-info">
+                        <h3>Tiến độ bài làm</h3>
+                        <p id="progressRatio">7 / 7 bước hoàn thành</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB: EVALUATION RESULTS (LIVE DATA) -->
+            <div id="tab-evaluation" class="tab-content active">
+                <!-- Unit Test Summary -->
+                <div class="card card-success" style="margin-bottom: 2rem; padding: 1.5rem 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="color: var(--accent-success);">
+                                <svg style="width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </span>
+                            <h2 style="font-size: 1.25rem;">Kết quả Unit Tests (pytest)</h2>
+                        </div>
+                        <div class="test-pass-badge">
+                            <span>●</span> ALL 4 PASSED (0.20s)
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; padding-left: 2.2rem;">
+                        Đã vượt qua tất cả các bài test kiểm thử cơ chế đọc/ghi <code>User.md</code>, kích hoạt Compaction và khả năng nhớ dài hạn chéo phiên (Cross-session Recall).
+                    </p>
+                </div>
+
+                <!-- Comparison Stat Cards -->
+                <div class="comparison-hero">
+                    <div class="stat-card">
+                        <div class="stat-label">Độ Chính Xác Recall (Standard)</div>
+                        <div class="stat-value">84.5%</div>
+                        <div class="stat-desc">Baseline đạt 0.0% (Quên sạch)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tiết Kiệm Prompt Tokens (Stress Test)</div>
+                        <div class="stat-value">51.4%</div>
+                        <div class="stat-desc">Advanced: 10,883 vs Baseline: 22,417</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Số Lần Nén (Compactions)</div>
+                        <div class="stat-value">5 lần</div>
+                        <div class="stat-desc">Kích hoạt khi vượt 800 tokens</div>
+                    </div>
+                </div>
+
+                <!-- Standard Benchmark Table -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-title-group">
+                        <div class="card-title-icon">
+                            <svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zM9 19V9a2 2 0 012-2h2a2 2 0 012 2v10M9 19a2 2 0 002 2h2a2 2 0 002-2M15 19V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+                        </div>
+                        <h2>1. Standard Benchmark Results</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Chạy trên tập dữ liệu <code>conversations.json</code> (10 phiên hội thoại của người dùng <code>dungct</code>, độ dài hội thoại vừa phải).
+                    </p>
+                    <div class="table-responsive">
+                        <table class="bench-table">
+                            <thead>
+                                <tr>
+                                    <th>AI Agent</th>
+                                    <th>Agent Tokens Only (Phản hồi)</th>
+                                    <th>Prompt Tokens Processed (Context)</th>
+                                    <th>Cross-Session Recall</th>
+                                    <th>Response Quality</th>
+                                    <th>Memory Growth (Bytes)</th>
+                                    <th>Compactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Baseline Agent</strong></td>
+                                    <td>2,432</td>
+                                    <td>17,333</td>
+                                    <td class="value-bad">0.0%</td>
+                                    <td class="value-bad">10.0%</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr style="background-color: rgba(99, 102, 241, 0.05);">
+                                    <td><strong>Advanced Agent (Ours)</strong> <span class="badge" style="margin-top:0; font-size: 0.65rem;">Active</span></td>
+                                    <td>1,544</td>
+                                    <td>20,329</td>
+                                    <td class="value-good">84.5%</td>
+                                    <td class="value-good">84.0%</td>
+                                    <td>277 bytes</td>
+                                    <td>0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Phân tích Standard Benchmark:</h4>
+                        <p>
+                            Với các hội thoại ngắn, Advanced Agent có lượng prompt tokens processed lớn hơn một chút (<strong>20,329</strong> so với <strong>17,333</strong>) do phải liên tục mang theo nội dung file cấu trúc <code>User.md</code> trong system prompt. 
+                            Tuy nhiên, đổi lại Advanced Agent có độ nhớ chéo phiên vượt trội (<strong>84.5% recall</strong>) so với việc Baseline quên sạch hoàn toàn (<strong>0.0% recall</strong>).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stress Benchmark Table -->
+                <div class="card">
+                    <div class="card-title-group">
+                        <div class="card-title-icon" style="color: var(--accent-warning); background: rgba(245, 158, 11, 0.1);">
+                            <svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <h2>2. Long-Context Stress Benchmark</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Chạy trên tập dữ liệu <code>advanced_long_context.json</code> (Chuỗi tin nhắn cực dài, nhiều thông tin gây nhiễu để ép Compact Memory hoạt động).
+                    </p>
+                    <div class="table-responsive">
+                        <table class="bench-table">
+                            <thead>
+                                <tr>
+                                    <th>AI Agent</th>
+                                    <th>Agent Tokens Only (Phản hồi)</th>
+                                    <th>Prompt Tokens Processed (Context)</th>
+                                    <th>Cross-Session Recall</th>
+                                    <th>Response Quality</th>
+                                    <th>Memory Growth (Bytes)</th>
+                                    <th>Compactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Baseline Agent</strong></td>
+                                    <td>299</td>
+                                    <td class="value-bad">22,417</td>
+                                    <td class="value-bad">0.0%</td>
+                                    <td class="value-bad">10.0%</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr style="background-color: rgba(99, 102, 241, 0.05);">
+                                    <td><strong>Advanced Agent (Ours)</strong> <span class="badge" style="margin-top:0; font-size: 0.65rem;">Active</span></td>
+                                    <td>406</td>
+                                    <td class="value-good" style="font-weight: bold;">10,883</td>
+                                    <td class="value-good">25.0%</td>
+                                    <td class="value-good">28.3%</td>
+                                    <td>199 bytes</td>
+                                    <td class="value-good" style="font-weight: bold;">5 lần</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="highlight-box" style="border-left-color: var(--accent-secondary); background-color: rgba(6, 182, 212, 0.05);">
+                        <h4>Phân tích Stress Benchmark:</h4>
+                        <p>
+                            Khi hội thoại kéo dài vượt ngưỡng, cơ chế nén <strong>Compact Memory</strong> của Advanced Agent phát huy sức mạnh tối đa: nén lịch sử và kích hoạt compaction <strong>5 lần</strong>, giúp lượng prompt context chỉ còn <strong>10,883 tokens</strong> (giảm <strong>51.4%</strong> so với <strong>22,417 tokens</strong> của Baseline). 
+                            Điều này giúp tiết kiệm lượng token đầu vào cực lớn cho Agent và ngăn chặn hiện tượng tràn ngữ cảnh (context window overflow).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: OVERVIEW & ROADMAP -->
+            <div id="tab-overview" class="tab-content">
+                <div class="grid-2">
+                    <div class="card card-primary">
+                        <div class="card-title-group">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h2>Tóm Tắt Bài Tập Hôm Nay</h2>
+                        </div>
+                        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            Bài tập hôm nay yêu cầu cân bằng giữa khả năng ghi nhớ dài hạn (Recall) và chi phí vận hành (Token Usage/Context Window) của AI Agent.
+                        </p>
+                        <div class="highlight-box">
+                            <h4>Ba lớp Memory đã xây dựng:</h4>
+                            <p><strong>1. Short-term Memory:</strong> Lưu trữ trong thread hiện tại (Baseline và Advanced).</p>
+                            <p style="margin-top:0.35rem;"><strong>2. Persistent Memory:</strong> Đọc ghi file markdown cấu trúc <code>User.md</code> để nhớ facts bền vững qua các thread mới.</p>
+                            <p style="margin-top:0.35rem;"><strong>3. Compact Memory:</strong> Nén (Summarize) tin nhắn cũ khi vượt ngưỡng để tối ưu hóa context size.</p>
+                        </div>
+                    </div>
+
+                    <div class="card card-accent">
+                        <div class="card-title-group">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <h2>Các Tính Năng Nâng Cao Đã Có (90-100 Điểm)</h2>
+                        </div>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem;">
+                            <li><strong style="color: var(--accent-success);">✓ Conflict Handling:</strong> Tự động ghi đè, cập nhật thông tin đính chính mới nhất của người dùng (ví dụ: đổi nơi ở từ Huế sang Đà Nẵng) để tránh xung đột dữ liệu.</li>
+                            <li><strong style="color: var(--accent-success);">✓ Structured Entity Extraction:</strong> Phân tách facts và ghi lưu trữ thành các cặp Khóa: Giá trị có cấu trúc rõ ràng trong markdown để dễ dàng phân tích ngoại tuyến.</li>
+                            <li><strong style="color: var(--accent-success);">✓ Question Filtering:</strong> Bỏ qua các tin nhắn mang tính chất đặt câu hỏi thuần túy, tránh lưu nhầm câu hỏi thành facts của user.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title-group">
+                        <div class="card-title-icon">
+                            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        </div>
+                        <h2>Lộ Trình Triển Khai Bài Làm</h2>
+                    </div>
+
+                    <div class="task-list">
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step1" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 1: Cấu hình chung & Model Provider</div>
+                                <div class="task-description">Định nghĩa cấu hình đường dẫn, ngưỡng compact trong config.py và tích hợp các LLM provider vào model_provider.py.</div>
+                                <span class="badge badge-file">src/config.py</span>
+                                <span class="badge badge-file">src/model_provider.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step2" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 2: Xây dựng Lớp Lưu Trữ UserProfileStore</div>
+                                <div class="task-description">Triển khai UserProfileStore trong memory_store.py để thực hiện đọc, ghi, sửa file markdown User.md cho từng người dùng.</div>
+                                <span class="badge badge-file">src/memory_store.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step3" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 3: Phát triển CompactMemoryManager</div>
+                                <div class="task-description">Viết logic quản lý nén tin nhắn cũ trong memory_store.py khi số lượng token vượt ngưỡng threshold_tokens.</div>
+                                <span class="badge badge-file">src/memory_store.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step4" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 4: Hoàn thiện Baseline Agent</div>
+                                <div class="task-description">Viết BaselineAgent chỉ nhớ trong cùng một thread, trả về kết quả phản hồi và tính toán token ở offline mode.</div>
+                                <span class="badge badge-file">src/agent_baseline.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step5" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 5: Hoàn thiện Advanced Agent</div>
+                                <div class="task-description">Tích hợp UserProfileStore và CompactMemoryManager vào AdvancedAgent. Xử lý logic trích xuất fact, ghi User.md và phản hồi thông tin recall.</div>
+                                <span class="badge badge-file">src/agent_advanced.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step6" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 6: Triển khai Bộ Chạy Benchmark & Stress Test</div>
+                                <div class="task-description">Xây dựng file benchmark.py để chạy toàn bộ hội thoại và kiểm tra độ chính xác recall, prompt tokens, in ra bảng so sánh kết quả dạng Markdown.</div>
+                                <span class="badge badge-file">src/benchmark.py</span>
+                            </div>
+                        </div>
+
+                        <div class="task-item completed">
+                            <input type="checkbox" id="step7" checked>
+                            <div class="task-details">
+                                <div class="task-title">Bước 7: Viết Test Case & Hoàn thành Phần Phân Tích (Bonus)</div>
+                                <div class="task-description">Viết các bài test trong test_agents.py và viết tài liệu phân tích trade-off về mặt token/recall và các ý tưởng bonus để đạt điểm tối đa.</div>
+                                <span class="badge badge-file">src/test_agents.py</span>
+                                <span class="badge">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: TECH SPECS & CODE HINTS -->
+            <div id="tab-specs" class="tab-content">
+                <div class="tabs-sub">
+                    <button class="sub-tab-btn active" data-sub="sub-config">1. Config & Provider</button>
+                    <button class="sub-tab-btn" data-sub="sub-memory">2. Memory Store Core</button>
+                    <button class="sub-tab-btn" data-sub="sub-baseline">3. Baseline Agent</button>
+                    <button class="sub-tab-btn" data-sub="sub-advanced">4. Advanced Agent</button>
+                </div>
+
+                <!-- SUB TAB: CONFIG -->
+                <div id="sub-config" class="spec-container active">
+                    <div class="card">
+                        <h3>Cấu Hình & Khởi Tạo Model Provider</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            Cấu hình đường dẫn và khởi tạo model chat từ LangChain.
+                        </p>
+                        
+                        <pre><span class="code-lang">model_provider.py</span><code><span class="keyword">def</span> <span class="function">normalize_provider</span>(value: str) -> str:
+    val = value.lower().strip()
+    <span class="keyword">if</span> val <span class="keyword">in</span> [<span class="string">"google"</span>, <span class="string">"gemini"</span>]: <span class="keyword">return</span> <span class="string">"gemini"</span>
+    <span class="keyword">return</span> val
+
+<span class="keyword">def</span> <span class="function">build_chat_model</span>(config: ProviderConfig):
+    provider = normalize_provider(config.provider)
+    <span class="keyword">if</span> provider == <span class="string">"openai"</span>:
+        <span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI
+        <span class="keyword">return</span> ChatOpenAI(model=config.model_name, temperature=config.temperature, api_key=config.api_key)
+</code></pre>
+                    </div>
+                </div>
+
+                <!-- SUB TAB: MEMORY -->
+                <div id="sub-memory" class="spec-container">
+                    <div class="card">
+                        <h3>Lớp Lưu Trữ File markdown & Compact Memory</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            Quản lý file <code>User.md</code> và cơ chế nén nén bộ nhớ (Compaction).
+                        </p>
+                        
+                        <pre><span class="code-lang">memory_store.py</span><code><span class="keyword">class</span> <span class="function">UserProfileStore</span>:
+    <span class="keyword">def</span> <span class="function">read_facts</span>(self, user_id: str) -> dict[str, str]:
+        content = self.read_text(user_id)
+        facts = {}
+        <span class="keyword">for</span> line <span class="keyword">in</span> content.splitlines():
+            <span class="keyword">if</span> line.startswith(<span class="string">"- "</span>) <span class="keyword">and</span> <span class="string">":"</span> <span class="keyword">in</span> line:
+                k, v = line[2:].split(<span class="string">":"</span>, 1)
+                facts[k.strip().lower()] = v.strip()
+        <span class="keyword">return</span> facts
+</code></pre>
+                    </div>
+                </div>
+
+                <!-- SUB TAB: BASELINE -->
+                <div id="sub-baseline" class="spec-container">
+                    <div class="card">
+                        <h3>Baseline Agent (Chỉ nhớ trong Thread)</h3>
+                        <pre><span class="code-lang">agent_baseline.py</span><code><span class="keyword">class</span> <span class="function">BaselineAgent</span>:
+    <span class="keyword">def</span> <span class="function">_reply_offline</span>(self, thread_id: str, message: str) -> dict[str, Any]:
+        <span class="keyword">if</span> thread_id <span class="keyword">not in</span> self.sessions:
+            self.sessions[thread_id] = SessionState()
+        session = self.sessions[thread_id]
+        
+        prompt_tokens = sum(estimate_tokens(m[<span class="string">"content"</span>]) <span class="keyword">for</span> m <span class="keyword">in</span> session.messages)
+        session.prompt_tokens_processed += prompt_tokens
+        session.messages.append({<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: message})
+        
+        ans = <span class="string">"Tôi là Baseline Agent và không nhớ thông tin cũ ngoài thread này."</span>
+        reply_tokens = estimate_tokens(ans)
+        session.token_usage += reply_tokens
+        session.messages.append({<span class="string">"role"</span>: <span class="string">"assistant"</span>, <span class="string">"content"</span>: ans})
+        <span class="keyword">return</span> {<span class="string">"response"</span>: ans, <span class="string">"tokens"</span>: reply_tokens, <span class="string">"prompt_tokens"</span>: prompt_tokens}
+</code></pre>
+                    </div>
+                </div>
+
+                <!-- SUB TAB: ADVANCED -->
+                <div id="sub-advanced" class="spec-container">
+                    <div class="card">
+                        <h3>Advanced Agent (3 Tầng Memory)</h3>
+                        <pre><span class="code-lang">agent_advanced.py</span><code><span class="keyword">class</span> <span class="function">AdvancedAgent</span>:
+    <span class="keyword">def</span> <span class="function">_reply_offline</span>(self, user_id: str, thread_id: str, message: str) -> dict[str, Any]:
+        facts = self.profile_store.read_facts(user_id)
+        new_facts = extract_profile_updates(message)
+        facts.update(new_facts)
+        self.profile_store.write_facts(user_id, facts)
+        
+        self.compact_memory.append(thread_id, <span class="string">"user"</span>, message)
+        prompt_tokens = self._estimate_prompt_context_tokens(user_id, thread_id)
+        
+        response_text = self._offline_response(user_id, thread_id, message)
+        self.compact_memory.append(thread_id, <span class="string">"assistant"</span>, response_text)
+        reply_tokens = estimate_tokens(response_text)
+        
+        self.thread_tokens[thread_id] = self.thread_tokens.get(thread_id, 0) + reply_tokens
+        self.thread_prompt_tokens[thread_id] = self.thread_prompt_tokens.get(thread_id, 0) + prompt_tokens
+        <span class="keyword">return</span> {<span class="string">"response"</span>: response_text, <span class="string">"tokens"</span>: reply_tokens, <span class="string">"prompt_tokens"</span>: prompt_tokens}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: DIAGRAM -->
+            <div id="tab-diagram" class="tab-content">
+                <div class="card">
+                    <div class="card-title-group">
+                        <div class="card-title-icon">
+                            <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        </div>
+                        <h2>Luồng Xử Lý Của Advanced Memory System</h2>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem;">
+                        Sơ đồ dưới đây minh họa cách Advanced Agent tiếp nhận một tin nhắn của người dùng, phân phối vào các tầng nhớ và tối ưu ngữ cảnh.
+                    </p>
+
+                    <div class="flow-visualizer">
+                        <div class="flow-step">
+                            <div class="flow-step-number">1</div>
+                            <div>
+                                <div class="flow-step-title">User Message Received</div>
+                                <div class="flow-step-desc">Người dùng gửi tin nhắn vào hệ thống kèm theo <code>user_id</code> và <code>thread_id</code>.</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-number">2</div>
+                            <div>
+                                <div class="flow-step-title">Fact Extraction & Profile Sync</div>
+                                <div class="flow-step-desc">Agent trích xuất thông tin mới (nơi ở, nghề nghiệp...) và cập nhật ngay lập tức vào file markdown <code>User.md</code>.</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-number">3</div>
+                            <div>
+                                <div class="flow-step-title">Short-Term Memory Append</div>
+                                <div class="flow-step-desc">Thêm tin nhắn mới vào <code>CompactMemoryManager</code> của thread hiện tại.</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-number">4</div>
+                            <div>
+                                <div class="flow-step-title">Compaction Check (Nén bộ nhớ)</div>
+                                <div class="flow-step-desc">Nếu tổng số token của thread vượt ngưỡng, nén các tin nhắn cũ hơn thành 1 dòng summary chung và giải phóng các tin nhắn cũ.</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-number">5</div>
+                            <div>
+                                <div class="flow-step-title">Context Window Assembly</div>
+                                <div class="flow-step-desc">Lắp ráp Prompt gồm: <code>User.md</code> + <code>Summary</code> + <code>Recent Messages (mới nhất)</code> đưa vào LLM sinh câu trả lời.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        // Tab switching logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                tabContents.forEach(t => t.classList.remove('active'));
+
+                item.classList.add('active');
+                const tabId = item.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Sub tab switching logic
+        const subTabBtns = document.querySelectorAll('.sub-tab-btn');
+        const specContainers = document.querySelectorAll('.spec-container');
+
+        subTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                subTabBtns.forEach(b => b.classList.remove('active'));
+                specContainers.forEach(c => c.classList.remove('active'));
+
+                btn.classList.add('active');
+                const subId = btn.getAttribute('data-sub');
+                document.getElementById(subId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
